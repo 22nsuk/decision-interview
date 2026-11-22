@@ -1,0 +1,7 @@
+interface:
+  display_name: "Decision Interview"
+  short_description: "Clarify goals and test consequential decisions"
+  default_prompt: "Use $decision-interview to clarify this idea or pressure-test this plan, starting with the most consequential unresolved decision."
+
+policy:
+  allow_implicit_invocation: false
