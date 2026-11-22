@@ -20,8 +20,8 @@ spec.loader.exec_module(validation)
 class ValidationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.schema = json.loads((ROOT / "evals/cases.schema.json").read_text())
-        cls.cases = json.loads((ROOT / "evals/cases.json").read_text())
+        cls.schema = json.loads((ROOT / "evals/cases.schema.json").read_text(encoding="utf-8"))
+        cls.cases = json.loads((ROOT / "evals/cases.json").read_text(encoding="utf-8"))
 
     def setUp(self):
         self.data = deepcopy(self.cases)
@@ -105,22 +105,22 @@ class ValidationTests(unittest.TestCase):
             cases_file = root / "evals/cases.json"
             cases_file.write_text(json.dumps(self.data), encoding="utf-8")
             command = [sys.executable, str(root / "scripts/validate.py")]
-            valid = subprocess.run(command, capture_output=True, text=True, timeout=15)
+            valid = subprocess.run(command, capture_output=True, timeout=15)
             self.assertEqual(0, valid.returncode, valid.stderr)
             for content in ("{", '{"cases": [], "cases": []}'):
                 with self.subTest(content=content):
                     cases_file.write_text(content, encoding="utf-8")
-                    result = subprocess.run(command, capture_output=True, text=True, timeout=15)
+                    result = subprocess.run(command, capture_output=True, timeout=15)
                     self.assertNotEqual(0, result.returncode)
-                    self.assertIn("evals:", result.stderr)
+                    self.assertIn(b"evals:", result.stderr)
             cases_file.write_text(json.dumps(self.data), encoding="utf-8")
             metadata = root / "skills/decision-interview/agents/openai.yaml"
             for content in ("interface: [", "policy: {}\npolicy: {}\n"):
                 with self.subTest(content=content):
                     metadata.write_text(content, encoding="utf-8")
-                    result = subprocess.run(command, capture_output=True, text=True, timeout=15)
+                    result = subprocess.run(command, capture_output=True, timeout=15)
                     self.assertNotEqual(0, result.returncode)
-                    self.assertIn("agents/openai.yaml:", result.stderr)
+                    self.assertIn(b"agents/openai.yaml:", result.stderr)
 
 
 if __name__ == "__main__":

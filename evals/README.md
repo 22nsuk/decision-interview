@@ -12,29 +12,48 @@ From the repository root, in a development environment, run:
 ```sh
 python -m pip install -r requirements-dev.txt
 skills-ref validate skills/decision-interview
-python scripts/validate.py
-python -m unittest discover -s tests
+python -X warn_default_encoding -W error::EncodingWarning scripts/validate.py
+python -X warn_default_encoding -W error::EncodingWarning -m unittest discover -s tests
 ```
 
 The reference validator checks the skill package. Repository validation checks
 the evaluation schema and related invariants; the tests check that malformed
-inputs are rejected and supported inputs remain accepted. The
-[validation workflow](../.github/workflows/validate.yml) also checks documentation
-links in separate local-link and network-link jobs. External-link results
-depend on network access and the destination's response, so record them
-separately from local structure checks. These commands and CI do not call a
-model, execute the interview cases, or grade question quality. The earlier
-authoring-only `quick_validate.py` is not required to reproduce these checks.
+inputs are rejected and supported inputs remain accepted. The explicit warning
+options reject omitted text encodings instead of relying on a UTF-8 default.
+
+The [validation workflow](../.github/workflows/validate.yml) runs structure
+checks on Ubuntu and Windows. It records the Python encoding environment and
+disables Python's UTF-8 mode for those checks, so Windows can expose dependence
+on its default file encoding. A Windows runner does not by itself establish
+execution under Korean cp949; report the observed encoding with the result.
+On Windows, CI also runs `tests/test_install.ps1` against the actual PowerShell
+blocks in both READMEs, checking a new installation, rejection of an existing
+destination or missing source, and preservation of caller settings and variables.
+To repeat that check with PowerShell available, run:
+
+```sh
+pwsh -NoProfile -File tests/test_install.ps1
+```
+
+Pushes and pull requests also check local documentation links. External links
+are checked only by an explicit `workflow_dispatch` run; they still fail that
+manual run when invalid. Network availability and destination rate limits no
+longer make an ordinary push or pull request fail. Record external-link results
+separately from local checks, and report a skipped job as skipped.
+
+These commands and CI do not call a model, execute the interview cases, or grade
+question quality. The earlier authoring-only `quick_validate.py` is not required
+to reproduce these checks.
 
 ## Acceptance criteria
 
-1. Enter only the requested interview; preserve ordinary execution, review, and factual-answer tasks.
+1. Enter only the requested interview; preserve ordinary execution, review, and factual-answer tasks, including later tasks in the same session.
 2. Check available context and facts before asking; prioritize consequential human decisions and their prerequisites.
 3. Use focused, non-leading purpose questions and informed choices without forcing agreement or disagreement.
 4. Preserve confirmed decisions, verified facts, proposals, and open items distinctly, including exact conditions.
 5. Resolve conflicting conditions and revisit affected dependencies after a correction while retaining unrelated decisions.
-6. Honor delegation, uncertainty, budgets, and stop requests without inventing readiness.
-7. Produce an accurate, appropriately redacted handoff and preserve the existing execution boundary.
+6. Honor delegation, uncertainty, budgets, and stop requests. Judge sufficient clarity against the intended next action: its scope and consequential constraints are known, material choices are settled or specifically delegated, and remaining unknowns have a bounded treatment or concern later work. Do not turn a forced stop or deferral into a readiness claim.
+7. Produce an accurate, appropriately redacted handoff and preserve the execution boundary. A settled choice alone grants no new execution permission; a clear user instruction can grant it during the interview, and an earlier grant may already cover implementation after choices are settled.
 8. Work without framework dependencies, mandatory subagents, or automatic file writes.
 
 ## Case format
@@ -152,12 +171,18 @@ answer, correction, and handoff paths. Inspect these cases as examples of the
 required boundaries; source review is not a run of them.
 
 The initial revision reported structural checks and an independent source
-review on 2026-11-22. This expanded suite contains **19 scenarios**. Its presence
+review on 2026-11-22. This expanded suite contains **21 scenarios**. Its presence
 and any passing repository checks do not establish behavioral results.
 
-The follow-up received an independent source review covering the skill,
-documentation, 19 cases, schema, and validation workflow, with no material
-source-level defect found. That review did not run model conversations.
+The review of revision `04880f6` covered the skill, documentation, then-current
+19 cases, schema, and validation workflow and reported no material source-level
+defect. It did not execute Windows checks or model conversations. The later
+review found implicit encoding dependencies in the Python tests and a
+PowerShell example that changed the caller's preference variable. That earlier
+source review and Ubuntu success did not establish Windows compatibility.
+The current workflow adds Windows execution, strict encoding warnings, and
+checks of the actual PowerShell examples; results must be read against the
+revision and environment actually checked.
 
 **Native attempts: 1; completed responses: 0; behaviorally scored cases: 0.**
 The [2026-11-22 Codex attempt](results/2026-11-22-native-codex.json) exited during

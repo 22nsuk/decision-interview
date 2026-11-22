@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-11-22 — Windows validation and execution boundaries
+
+### Fixed
+
+- Read evaluation JSON explicitly as UTF-8 in Python tests and avoid implicit decoding of subprocess output.
+- Scope the PowerShell installation examples so their preference and working variables do not persist in the caller's session.
+- Correct the earlier review-status statement: the source review and Ubuntu checks did not exercise Windows and missed the encoding and PowerShell scope issues.
+
+### Changed
+
+- Run structural validation on Ubuntu and Windows, with Python UTF-8 mode disabled and missing encoding declarations treated as errors in repository checks.
+- Run external-link checks only on explicit workflow dispatch; keep local-link checks on pushes and pull requests and retain strict failures in manual network checks.
+- Keep pending interview topics visible in the conversation and define sufficient clarity relative to the intended next action.
+- Distinguish a decision from a new execution request, preserve earlier grants that already cover settled choices, and apply clear permission changes during an interview without redundant approval.
+
+### Added
+
+- Native PowerShell checks of both README examples for installation, existing-destination and missing-source refusal, and caller-scope preservation.
+- Two behavioral scenarios for a task switch after interview closure and explicit authorization granted during the interview, bringing the suite to 21 scenarios.
+- A multi-turn prior-authorization scenario and visible-queue criteria, plus concrete execution-boundary examples in both READMEs.
+
+### Validation scope
+
+Repository checks and installation-example tests do not execute the model scenarios. Windows runner results must identify their actual encoding; running on Windows alone does not prove Korean cp949 coverage. The previously recorded native Codex attempt still produced no model response or behavioral grade. See [evaluation guidance](evals/README.md) for the distinction and recorded limitations.
+
 ## 2026-11-22 — Evaluation and interview follow-up
 
 ### Changed

@@ -10,7 +10,7 @@ It preserves agreed conditions and closes with decisions, open questions, and a 
 ## How it works
 
 - Check the conversation and supplied evidence before asking; separate discoverable facts from human choices.
-- Keep pending topics and relevant dependencies visible, normally asking one question at a time.
+- Keep pending topics and relevant dependencies in a short, visible conversation recap, normally asking one question at a time.
 - Use open questions for intent, concrete alternatives for bounded choices, and examples or counterexamples for consequential assumptions.
 - Use a suitable host choice UI when available, or short numbered/named options that accept brief replies and custom answers.
 - Separate decisions, verified facts, proposals, and uncertainty; preserve exact quantities, exclusions, exceptions, and ordering.
@@ -19,6 +19,24 @@ It preserves agreed conditions and closes with decisions, open questions, and a 
 
 There is no fixed question count, ambiguity score, required subagent, MCP server, or automatic file storage.
 The skill instructions are in English; the conversation follows the user's language.
+
+### When is it clear enough?
+
+Assess the intended next action: its outcome, scope, and consequential constraints must be specific,
+and choices that would change it must be settled or explicitly delegated.
+Remaining unknowns must have a bounded treatment that permits that action, or affect only later work.
+For example, a performance experiment can be ready while launch remains blocked on its results.
+A stop request, exhausted budget, or missing evidence can also end the interview; distinguish
+work that can proceed from work that remains blocked.
+
+### Execution authority examples
+
+- After “discussion only,” choosing “Save draft” as a button label records a decision. That choice alone does not authorize a file edit.
+- “Now change the button label in `index.html` to Save draft” during the interview authorizes that edit. So does earlier permission to edit that file once the label is settled. Do not ask for the same approval again. Local editing permission does not itself include publication or deployment.
+
+Apply new execution requests, restrictions, and withdrawals; ask only about a material boundary
+that remains unclear. Valid user instructions and the host's governing rules and permissions
+determine authority; the skill does not grant it.
 
 ## Examples
 
@@ -103,23 +121,25 @@ Install in the environment running the host, especially when using both Windows 
 **PowerShell — Windows**
 
 ```powershell
-$ErrorActionPreference = "Stop"
-$skillSource = Join-Path (Get-Location) "skills/decision-interview"
-$skillTarget = Join-Path $HOME ".agents/skills/decision-interview"
-if (-not (Test-Path -LiteralPath (Join-Path $skillSource "SKILL.md"))) {
-    throw "Run this from the repository root."
+& {
+    $ErrorActionPreference = "Stop"
+    $skillSource = Join-Path (Get-Location) "skills/decision-interview"
+    $skillTarget = Join-Path $HOME ".agents/skills/decision-interview"
+    if (-not (Test-Path -LiteralPath (Join-Path $skillSource "SKILL.md"))) {
+        throw "Run this from the repository root."
+    }
+    if (Test-Path -LiteralPath $skillTarget) {
+        throw "Already exists: $skillTarget"
+    }
+    New-Item -ItemType Directory -Path (Split-Path -Parent $skillTarget) -Force | Out-Null
+    New-Item -ItemType Directory -Path $skillTarget -ErrorAction Stop | Out-Null
+    Get-ChildItem -LiteralPath $skillSource -Force |
+        Copy-Item -Destination $skillTarget -Recurse -ErrorAction Stop
 }
-if (Test-Path -LiteralPath $skillTarget) {
-    throw "Already exists: $skillTarget"
-}
-New-Item -ItemType Directory -Path (Split-Path -Parent $skillTarget) -Force | Out-Null
-New-Item -ItemType Directory -Path $skillTarget -ErrorAction Stop | Out-Null
-Get-ChildItem -LiteralPath $skillSource -Force |
-    Copy-Item -Destination $skillTarget -Recurse -ErrorAction Stop
 ```
 
-Both commands stop if the destination already exists. If copying fails partway through,
-inspect the new destination before retrying.
+Both commands stop if the destination already exists and keep their settings and variables
+out of the caller's scope. If copying fails partway through, inspect the new destination before retrying.
 
 ### After copying and when updating
 
@@ -190,15 +210,23 @@ From the repository root, in an isolated Python environment:
 ```text
 python -m pip install -r requirements-dev.txt
 skills-ref validate skills/decision-interview
-python scripts/validate.py
-python -m unittest discover -s tests
+python -X warn_default_encoding -W error::EncodingWarning scripts/validate.py
+python -X warn_default_encoding -W error::EncodingWarning -m unittest discover -s tests
 ```
 
 [GitHub Actions](.github/workflows/validate.yml) checks the skill format, Codex metadata,
-evaluation JSON Schema, and regression tests for the validator. Local links and external
-links run as separate jobs so network failures are distinguishable from structural failures.
+evaluation JSON Schema, and validator regression tests on Ubuntu and Windows.
+It disables Python UTF-8 mode, records the locale encoding, and treats implicit-encoding
+warnings as errors in repository validation and tests. The Windows job also tests the
+[actual PowerShell installation examples](tests/test_install.ps1): copied contents, preservation
+of existing installations, missing-source rejection, and caller settings.
+Rerun that check with PowerShell 7 using `pwsh -NoProfile -File tests/test_install.ps1`.
 
-The [evaluation guide](evals/README.md), [19 cases](evals/cases.json), and
+Pushes and pull requests check local documentation links. External links run only through
+Actions **Run workflow** (`workflow_dispatch`), so external outages or rate limits cannot
+fail ordinary commit CI. A manually requested external-link check still fails on broken links.
+
+The [evaluation guide](evals/README.md), [21 cases](evals/cases.json), and
 [JSON Schema](evals/cases.schema.json) are outside the installed skill.
 CI does not converse with models or test natural-language activation.
 Actual routing, retention, and question quality need recorded host trials.

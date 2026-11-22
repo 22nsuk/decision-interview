@@ -10,7 +10,7 @@ Decision Interview는 결과를 바꿀 미결정 사항과 그 선행 조건을 
 ## 핵심 동작
 
 - 현재 대화와 지정 자료를 먼저 확인하고, 조사할 사실과 사용자가 정할 선택을 구분합니다.
-- 여러 안건의 순서와 의존 관계를 유지하며 기본적으로 한 번에 한 질문을 합니다.
+- 여러 안건의 순서와 의존 관계를 대화에 보이는 짧은 목록으로 유지하며 기본적으로 한 번에 한 질문을 합니다.
 - 목적 탐색에는 열린 질문을, 구체적인 선택에는 대안과 절충을, 중요한 가정에는 사례와 반례를 사용합니다.
 - 선택 질문에는 가능한 경우 호스트의 선택 UI를 쓰며, 번호·짧은 키워드·직접 입력으로 답할 수 있게 합니다.
 - 확인된 결정·사실·제안·불확실성을 구분하고, 수치·단위·금지 조건·예외·순서를 보존합니다.
@@ -19,6 +19,21 @@ Decision Interview는 결과를 바꿀 미결정 사항과 그 선행 조건을 
 
 고정 질문 수, 모호성 점수, 필수 보조 에이전트, MCP 서버, 자동 파일 저장을 요구하지 않습니다.
 스킬 본문은 영문이며 대화는 사용자의 언어를 따릅니다.
+
+### 언제 충분히 명확한가
+
+다음 행동의 결과·범위·중요한 제약이 구체적이고, 그 행동을 바꿀 선택이 결정되었거나 명시적으로 위임되었으면 종료를 검토합니다.
+남은 불확실성도 그 행동을 진행할 수 있는 처리 방법이 정해졌거나 이후 단계에만 영향을 주어야 합니다.
+예를 들어 성능을 측정할 실험은 시작할 수 있어도, 측정 결과가 없는 상태에서 출시까지 준비되었다고 판단하지 않습니다.
+중단 요청·시간 소진·근거 부족으로도 인터뷰를 마칠 수 있지만, 그때는 진행 가능한 일과 막힌 일을 구분합니다.
+
+### 실행 권한 예시
+
+- “오늘은 논의만 하자” 이후 “버튼 문구는 Save draft로 정하자”라고 하면 결정만 기록합니다. 이 선택 자체는 파일 수정 승인이 아닙니다.
+- 인터뷰 중 “이제 `index.html`의 버튼 문구를 Save draft로 바꿔줘”라고 요청하거나, 앞서 “문구가 정해지면 그 파일을 수정해줘”라고 승인했다면 해당 수정은 다시 승인받지 않고 진행합니다. 로컬 수정 승인에 게시·배포까지 포함되지는 않습니다.
+
+새로운 실행 요청·제한·승인 철회를 반영하며, 중요한 실행 범위가 불분명할 때만 필요한 부분을 확인합니다.
+스킬이 권한을 부여하는 것이 아니라 사용자의 유효한 요청과 호스트의 지침·권한이 실행 범위를 정합니다.
 
 ## 사용 예시
 
@@ -103,22 +118,25 @@ Windows 네이티브와 WSL을 함께 사용한다면 도구를 실행하는 쪽
 ### PowerShell — Windows
 
 ```powershell
-$ErrorActionPreference = "Stop"
-$skillSource = Join-Path (Get-Location) "skills/decision-interview"
-$skillTarget = Join-Path $HOME ".agents/skills/decision-interview"
-if (-not (Test-Path -LiteralPath (Join-Path $skillSource "SKILL.md"))) {
-    throw "Run this from the repository root."
+& {
+    $ErrorActionPreference = "Stop"
+    $skillSource = Join-Path (Get-Location) "skills/decision-interview"
+    $skillTarget = Join-Path $HOME ".agents/skills/decision-interview"
+    if (-not (Test-Path -LiteralPath (Join-Path $skillSource "SKILL.md"))) {
+        throw "Run this from the repository root."
+    }
+    if (Test-Path -LiteralPath $skillTarget) {
+        throw "Already exists: $skillTarget"
+    }
+    New-Item -ItemType Directory -Path (Split-Path -Parent $skillTarget) -Force | Out-Null
+    New-Item -ItemType Directory -Path $skillTarget -ErrorAction Stop | Out-Null
+    Get-ChildItem -LiteralPath $skillSource -Force |
+        Copy-Item -Destination $skillTarget -Recurse -ErrorAction Stop
 }
-if (Test-Path -LiteralPath $skillTarget) {
-    throw "Already exists: $skillTarget"
-}
-New-Item -ItemType Directory -Path (Split-Path -Parent $skillTarget) -Force | Out-Null
-New-Item -ItemType Directory -Path $skillTarget -ErrorAction Stop | Out-Null
-Get-ChildItem -LiteralPath $skillSource -Force |
-    Copy-Item -Destination $skillTarget -Recurse -ErrorAction Stop
 ```
 
-두 명령은 기존 설치 폴더가 있으면 중단합니다. 복사 중 오류가 나면 새 목적지의 상태를 확인한 뒤 재시도합니다.
+두 명령은 기존 설치 폴더가 있으면 중단하며, 명령 안의 설정과 변수는 호출한 셸에 남기지 않습니다.
+복사 중 오류가 나면 새 목적지의 상태를 확인한 뒤 재시도합니다.
 
 ### 복사 후 확인과 업데이트
 
@@ -189,15 +207,20 @@ API 키나 비밀번호는 제외하고, 개인정보는 다음 작업에 필요
 ```text
 python -m pip install -r requirements-dev.txt
 skills-ref validate skills/decision-interview
-python scripts/validate.py
-python -m unittest discover -s tests
+python -X warn_default_encoding -W error::EncodingWarning scripts/validate.py
+python -X warn_default_encoding -W error::EncodingWarning -m unittest discover -s tests
 ```
 
-[GitHub Actions](.github/workflows/validate.yml)는 스킬 형식·Codex 메타데이터·평가 JSON 스키마와 검사 도구의 회귀 테스트를 실행하고,
-로컬 링크와 외부 링크는 별도 작업으로 검사합니다.
-외부 링크의 네트워크 실패는 구조 검증이나 모델 동작의 실패와 구분합니다.
+[GitHub Actions](.github/workflows/validate.yml)는 Ubuntu와 Windows에서 스킬 형식·Codex 메타데이터·평가 JSON 스키마와 검사 도구의 회귀 테스트를 실행합니다.
+Python의 UTF-8 모드를 끄고 실제 로캘 인코딩을 기록하며, 저장소 검증과 테스트에서는 기본 인코딩 사용 경고를 오류로 처리합니다.
+Windows 작업은 [실제 PowerShell 설치 예제](tests/test_install.ps1)의 복사 결과·기존 설치 보존·소스 누락 거부·호출자 설정 보존도 검사합니다.
+이 검사는 PowerShell 7에서 `pwsh -NoProfile -File tests/test_install.ps1`로 재실행할 수 있습니다.
 
-[평가 안내](evals/README.md), [19개 사례](evals/cases.json),
+push와 pull request에서는 로컬 문서 링크를 검사합니다.
+외부 링크 검사는 Actions의 **Run workflow**(`workflow_dispatch`)로 수동 실행할 때만 수행하므로, 외부 서비스의 장애나 요청 한도가 일반 커밋의 CI를 실패시키지 않습니다.
+수동 실행한 외부 링크 검사는 잘못된 링크를 실패로 보고합니다.
+
+[평가 안내](evals/README.md), [21개 사례](evals/cases.json),
 [JSON Schema](evals/cases.schema.json)는 스킬 폴더 밖에 있습니다.
 CI는 모델과 대화하거나 자연어 발동을 시험하지 않습니다.
 실제 발동·조건 보존·질문 품질은 호스트별 대화 시험과 기록이 필요하며, 구조 검증만으로 성능 향상이나 권한 격리를 보장하지 않습니다.

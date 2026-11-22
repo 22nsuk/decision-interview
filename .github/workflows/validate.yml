@@ -10,8 +10,14 @@ permissions:
 
 jobs:
   structure:
-    name: Skill format and evaluation schema
-    runs-on: ubuntu-latest
+    name: Skill format and evaluation schema (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: '0'
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -22,12 +28,24 @@ jobs:
           python-version: '3.12'
       - name: Install development validators
         run: python -m pip install -r requirements-dev.txt
+      - name: Record Python text encoding
+        run: python -c "import locale, sys; print('utf8_mode:', sys.flags.utf8_mode); print('locale:', locale.getencoding())"
       - name: Validate Agent Skills format
         run: skills-ref validate skills/decision-interview
       - name: Validate Codex metadata and evaluation schema
+        env:
+          PYTHONWARNDEFAULTENCODING: '1'
+          PYTHONWARNINGS: error::EncodingWarning
         run: python scripts/validate.py
       - name: Check validator failure detection
+        env:
+          PYTHONWARNDEFAULTENCODING: '1'
+          PYTHONWARNINGS: error::EncodingWarning
         run: python -m unittest discover -s tests
+      - name: Check documented PowerShell installation
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./tests/test_install.ps1
 
   local-links:
     name: Local documentation links
@@ -47,6 +65,7 @@ jobs:
 
   network-links:
     name: External documentation links
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
