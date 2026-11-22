@@ -92,51 +92,38 @@ Claude Code에서는 시작 명령의 `$decision-interview`를 `/decision-interv
 | Codex CLI / IDE | `.agents/skills/decision-interview/` | `~/.agents/skills/decision-interview/` | `$decision-interview` |
 | Claude Code | `.claude/skills/decision-interview/` | `~/.claude/skills/decision-interview/` | `/decision-interview` |
 
-저장소를 내려받은 뒤, **저장소 루트에서** 다음 새 설치 명령 중 하나를 실행합니다.
-기본 목적지는 사용자 범위의 Codex 폴더입니다. Claude Code는 `.agents`를 `.claude`로,
-프로젝트 설치는 목적지를 해당 프로젝트의 경로로 바꿉니다.
-Windows 네이티브와 WSL을 함께 사용한다면 도구를 실행하는 쪽에 설치합니다.
+저장소를 내려받은 뒤 다음 새 설치 명령 중 하나를 실행합니다. 아래 예시는 저장소 루트 기준이며,
+다른 위치에서는 스크립트의 절대 경로를 사용합니다. 설치 원본은 현재 작업 폴더가 아닌 스크립트 위치를 기준으로 찾으므로 Git이 없는 ZIP 다운로드본에서도 사용할 수 있습니다.
+기본 목적지는 사용자 범위의 Codex 폴더입니다. Windows 네이티브와 WSL을 함께 사용한다면 도구를 실행하는 쪽에 설치합니다.
 
 ### Bash — macOS / Linux / WSL
 
+[설치 스크립트](scripts/install.sh)를 Bash로 실행합니다. `source`로 불러오지 않습니다.
+
 ```bash
-(
-  set -eu
-  skill_parent="$HOME/.agents/skills"
-  skill_target="$skill_parent/decision-interview"
-  test -f skills/decision-interview/SKILL.md
-  mkdir -p "$skill_parent"
-  if [ -e "$skill_target" ] || [ -L "$skill_target" ]; then
-    printf 'Already exists: %s\n' "$skill_target" >&2
-    exit 1
-  fi
-  mkdir "$skill_target"
-  cp -R skills/decision-interview/. "$skill_target/"
-)
+bash scripts/install.sh
 ```
 
-### PowerShell — Windows
+Claude Code는 대신 `bash scripts/install.sh "$HOME/.claude/skills/decision-interview"`를 실행합니다.
+프로젝트 범위에 설치하려면 인자로 해당 프로젝트의 `.agents/skills/decision-interview` 또는 `.claude/skills/decision-interview` 경로를 전달합니다.
+상대 목적지는 명령을 실행한 작업 폴더를 기준으로 해석합니다.
+
+### PowerShell — Windows PowerShell 5.1 / PowerShell 7
+
+[설치 스크립트](scripts/install.ps1)를 호출 연산자 `&`로 실행합니다. 점 소싱으로 불러오지 않습니다.
 
 ```powershell
-& {
-    $ErrorActionPreference = "Stop"
-    $skillSource = Join-Path (Get-Location) "skills/decision-interview"
-    $skillTarget = Join-Path $HOME ".agents/skills/decision-interview"
-    if (-not (Test-Path -LiteralPath (Join-Path $skillSource "SKILL.md"))) {
-        throw "Run this from the repository root."
-    }
-    if (Test-Path -LiteralPath $skillTarget) {
-        throw "Already exists: $skillTarget"
-    }
-    New-Item -ItemType Directory -Path (Split-Path -Parent $skillTarget) -Force | Out-Null
-    New-Item -ItemType Directory -Path $skillTarget -ErrorAction Stop | Out-Null
-    Get-ChildItem -LiteralPath $skillSource -Force |
-        Copy-Item -Destination $skillTarget -Recurse -ErrorAction Stop
-}
+& .\scripts\install.ps1
 ```
 
-두 명령은 기존 설치 폴더가 있으면 중단하며, 명령 안의 설정과 변수는 호출한 셸에 남기지 않습니다.
-복사 중 오류가 나면 새 목적지의 상태를 확인한 뒤 재시도합니다.
+Claude Code는 대신 `& .\scripts\install.ps1 -Destination (Join-Path $HOME ".claude/skills/decision-interview")`를 실행합니다.
+프로젝트 설치도 `-Destination`으로 경로를 지정하며, 상대 목적지는 현재 PowerShell 작업 폴더를 기준으로 합니다.
+
+두 스크립트는 기존 목적지가 파일·폴더·심볼릭 링크인 경우 중단하며 끊어진 링크도 덮어쓰지 않습니다.
+설치 전후에 `SKILL.md`와 `agents/openai.yaml`을 확인하고 복사된 두 파일의 내용이 일치해야 성공을 보고합니다.
+복사·검증 실패 시 이번 실행이 만든 미완성 설치 또는 임시 복사본만 정리합니다. 이미 존재했거나 다른 설치 프로세스가 먼저 만든 목적지는 삭제하지 않습니다.
+정리에 실패했거나 프로세스가 강제 종료되었다면 남은 경로를 확인한 뒤 재시도합니다. 부모 폴더는 정리 대상에 포함하지 않습니다.
+호스트 설정과 호출자의 변수·현재 작업 폴더는 변경하지 않습니다.
 
 ### 복사 후 확인과 업데이트
 
@@ -213,8 +200,10 @@ python -X warn_default_encoding -W error::EncodingWarning -m unittest discover -
 
 [GitHub Actions](.github/workflows/validate.yml)는 Ubuntu와 Windows에서 스킬 형식·Codex 메타데이터·평가 JSON 스키마와 검사 도구의 회귀 테스트를 실행합니다.
 Python의 UTF-8 모드를 끄고 실제 로캘 인코딩을 기록하며, 저장소 검증과 테스트에서는 기본 인코딩 사용 경고를 오류로 처리합니다.
-Windows 작업은 [실제 PowerShell 설치 예제](tests/test_install.ps1)의 복사 결과·기존 설치 보존·소스 누락 거부·호출자 설정 보존도 검사합니다.
-이 검사는 PowerShell 7에서 `pwsh -NoProfile -File tests/test_install.ps1`로 재실행할 수 있습니다.
+Ubuntu에서는 [Bash 테스트](tests/test_install.sh)를, Windows에서는 [PowerShell 테스트](tests/test_install.ps1)를 PowerShell 7과 Windows PowerShell 5.1에서 각각 실행합니다.
+테스트는 실제 설치 스크립트의 복사 결과·기존 경로와 경쟁 상황에서의 보존·필수 파일 누락·복사 실패 정리와 재시도·호출자 상태를 확인합니다.
+로컬에서는 `bash tests/test_install.sh`, `pwsh -NoProfile -File tests/test_install.ps1` 또는 `powershell -NoProfile -File tests/test_install.ps1`로 해당 검사를 재실행할 수 있습니다.
+macOS의 네이티브 실행은 이 CI에 포함하지 않습니다.
 
 push와 pull request에서는 로컬 문서 링크를 검사합니다.
 외부 링크 검사는 Actions의 **Run workflow**(`workflow_dispatch`)로 수동 실행할 때만 수행하므로, 외부 서비스의 장애나 요청 한도가 일반 커밋의 CI를 실패시키지 않습니다.

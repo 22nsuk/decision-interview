@@ -26,13 +26,21 @@ checks on Ubuntu and Windows. It records the Python encoding environment and
 disables Python's UTF-8 mode for those checks, so Windows can expose dependence
 on its default file encoding. A Windows runner does not by itself establish
 execution under Korean cp949; report the observed encoding with the result.
-On Windows, CI also runs `tests/test_install.ps1` against the actual PowerShell
-blocks in both READMEs, checking a new installation, rejection of an existing
-destination or missing source, and preservation of caller settings and variables.
-To repeat that check with PowerShell available, run:
+Installation checks execute the standalone scripts used by both READMEs:
+`tests/test_install.sh` on Ubuntu, and `tests/test_install.ps1` under both
+PowerShell 7 and Windows PowerShell 5.1 on Windows. They use disposable
+destinations without changing `HOME`. They cover copied file contents and layout,
+hidden/nested files, literal paths, source resolution outside the repository,
+existing and competing destinations, missing required files, copy/verification
+failure cleanup and retry, and caller state. Controlled copy and race injections
+exercise failure paths; they are not evidence of protection against hostile
+same-user path replacement. Native macOS execution is not part of this CI.
+Run the relevant checks locally with:
 
 ```sh
+bash tests/test_install.sh
 pwsh -NoProfile -File tests/test_install.ps1
+powershell -NoProfile -File tests/test_install.ps1
 ```
 
 Pushes and pull requests also check local documentation links. External links
@@ -180,9 +188,12 @@ defect. It did not execute Windows checks or model conversations. The later
 review found implicit encoding dependencies in the Python tests and a
 PowerShell example that changed the caller's preference variable. That earlier
 source review and Ubuntu success did not establish Windows compatibility.
-The current workflow adds Windows execution, strict encoding warnings, and
-checks of the actual PowerShell examples; results must be read against the
-revision and environment actually checked.
+Revision `a6f18d7` added Windows execution, strict encoding warnings, and checks
+that extracted and compared the actual PowerShell examples in both READMEs.
+The installation follow-up moves that implementation into standalone scripts
+and tests Bash as well as both Windows PowerShell hosts. Results must be read
+against the revision and environment actually checked; the interview skill and
+21 model scenarios are unchanged by this installation follow-up.
 
 **Native attempts: 1; completed responses: 0; behaviorally scored cases: 0.**
 The [2026-11-22 Codex attempt](results/2026-11-22-native-codex.json) exited during

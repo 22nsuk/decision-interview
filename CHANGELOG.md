@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-11-22 — Standalone installers and Bash coverage
+
+### Changed
+
+- Move installation code into `scripts/install.sh` and `scripts/install.ps1`; both READMEs now reference the same scripts with short invocation examples.
+- Resolve the source relative to the script and accept an explicit destination without requiring Git or Python for installation.
+- Isolate Bash source resolution from inherited `CDPATH` and preserve literal destination names beginning with a hyphen.
+- Check both required source files and verify their copied contents before reporting success.
+- Clean up incomplete outputs owned by the failing invocation while preserving pre-existing or concurrently claimed destinations.
+- Preserve Bash's exclusive `mkdir` reservation. PowerShell copies into an owned staging directory and publishes with a non-overwriting directory move.
+
+### Added
+
+- Ubuntu CI execution of the Bash installer tests and Windows CI execution under both PowerShell 7 and Windows PowerShell 5.1.
+- Installation checks for hidden/deep files, literal and non-ASCII paths, missing required files, existing files/directories/links, competing destinations, and copy/verification failure cleanup and retry.
+
+### Review scope
+
+The previous PowerShell test already extracted and compared both README examples; it did not duplicate their installation implementation. The standalone scripts simplify ownership and remove the need for code-block extraction. `$HOME` remains valid in Windows PowerShell 5.1. This change does not alter interview instructions, invocation policy, or model evaluation cases. Native macOS execution and hostile same-user path replacement are outside the exercised installation checks.
+
 ## 2026-11-22 — Windows validation and execution boundaries
 
 ### Fixed

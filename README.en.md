@@ -95,51 +95,42 @@ The installed skill does not require scripts or development packages.
 | Codex CLI / IDE | `.agents/skills/decision-interview/` | `~/.agents/skills/decision-interview/` | `$decision-interview` |
 | Claude Code | `.claude/skills/decision-interview/` | `~/.claude/skills/decision-interview/` | `/decision-interview` |
 
-Download or clone this repository. Run one of these **new-install commands from its root**.
-The default destination is the user-level Codex directory. For Claude Code, replace `.agents`
-with `.claude`; for project scope, set the destination inside the intended project.
-Install in the environment running the host, especially when using both Windows and WSL.
+Download or clone this repository and run one of these new-install commands.
+The examples below start at the repository root; from another directory, use the script's absolute path.
+Source files are resolved relative to the script, so a downloaded ZIP works without Git.
+The default destination is the user-level Codex directory. Install in the environment running the host,
+especially when using both Windows and WSL.
 
 **Bash — macOS / Linux / WSL**
 
+Run the [installer](scripts/install.sh) with Bash; do not source it.
+
 ```bash
-(
-  set -eu
-  skill_parent="$HOME/.agents/skills"
-  skill_target="$skill_parent/decision-interview"
-  test -f skills/decision-interview/SKILL.md
-  mkdir -p "$skill_parent"
-  if [ -e "$skill_target" ] || [ -L "$skill_target" ]; then
-    printf 'Already exists: %s\n' "$skill_target" >&2
-    exit 1
-  fi
-  mkdir "$skill_target"
-  cp -R skills/decision-interview/. "$skill_target/"
-)
+bash scripts/install.sh
 ```
 
-**PowerShell — Windows**
+For Claude Code, use `bash scripts/install.sh "$HOME/.claude/skills/decision-interview"` instead.
+For project scope, pass that project's `.agents/skills/decision-interview` or `.claude/skills/decision-interview`
+path as the argument. Relative destinations are resolved from the caller's working directory.
+
+**PowerShell — Windows PowerShell 5.1 / PowerShell 7**
+
+Run the [installer](scripts/install.ps1) with `&`; do not dot-source it.
 
 ```powershell
-& {
-    $ErrorActionPreference = "Stop"
-    $skillSource = Join-Path (Get-Location) "skills/decision-interview"
-    $skillTarget = Join-Path $HOME ".agents/skills/decision-interview"
-    if (-not (Test-Path -LiteralPath (Join-Path $skillSource "SKILL.md"))) {
-        throw "Run this from the repository root."
-    }
-    if (Test-Path -LiteralPath $skillTarget) {
-        throw "Already exists: $skillTarget"
-    }
-    New-Item -ItemType Directory -Path (Split-Path -Parent $skillTarget) -Force | Out-Null
-    New-Item -ItemType Directory -Path $skillTarget -ErrorAction Stop | Out-Null
-    Get-ChildItem -LiteralPath $skillSource -Force |
-        Copy-Item -Destination $skillTarget -Recurse -ErrorAction Stop
-}
+& .\scripts\install.ps1
 ```
 
-Both commands stop if the destination already exists and keep their settings and variables
-out of the caller's scope. If copying fails partway through, inspect the new destination before retrying.
+For Claude Code, use `& .\scripts\install.ps1 -Destination (Join-Path $HOME ".claude/skills/decision-interview")` instead.
+Use `-Destination` for project installations too. Relative destinations use the current PowerShell location.
+
+Both scripts refuse existing files, directories, and symbolic links, including dangling links.
+They check `SKILL.md` and `agents/openai.yaml` before and after copying and report success only
+when the two copied files match their sources. On a copy or verification failure, cleanup removes
+only the incomplete installation or staging directory created by that invocation. It does not
+remove a pre-existing destination or one claimed first by another installation process.
+If cleanup fails or the process is forcibly terminated, inspect any remaining path before retrying.
+Parent directories are retained. Host settings, caller variables, and the current directory are unchanged.
 
 ### After copying and when updating
 
@@ -217,10 +208,13 @@ python -X warn_default_encoding -W error::EncodingWarning -m unittest discover -
 [GitHub Actions](.github/workflows/validate.yml) checks the skill format, Codex metadata,
 evaluation JSON Schema, and validator regression tests on Ubuntu and Windows.
 It disables Python UTF-8 mode, records the locale encoding, and treats implicit-encoding
-warnings as errors in repository validation and tests. The Windows job also tests the
-[actual PowerShell installation examples](tests/test_install.ps1): copied contents, preservation
-of existing installations, missing-source rejection, and caller settings.
-Rerun that check with PowerShell 7 using `pwsh -NoProfile -File tests/test_install.ps1`.
+warnings as errors in repository validation and tests. The Ubuntu job runs [Bash installation tests](tests/test_install.sh).
+Windows runs [PowerShell installation tests](tests/test_install.ps1) under both PowerShell 7 and
+Windows PowerShell 5.1. They exercise the actual scripts for copied contents, existing and competing
+destination preservation, missing required files, copy-failure cleanup and retry, and caller state.
+Rerun them with `bash tests/test_install.sh`, `pwsh -NoProfile -File tests/test_install.ps1`,
+or `powershell -NoProfile -File tests/test_install.ps1` as appropriate.
+Native macOS execution is not included in this CI.
 
 Pushes and pull requests check local documentation links. External links run only through
 Actions **Run workflow** (`workflow_dispatch`), so external outages or rate limits cannot

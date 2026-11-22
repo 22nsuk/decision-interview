@@ -42,9 +42,16 @@ jobs:
           PYTHONWARNDEFAULTENCODING: '1'
           PYTHONWARNINGS: error::EncodingWarning
         run: python -m unittest discover -s tests
-      - name: Check documented PowerShell installation
+      - name: Check Bash installation
+        if: runner.os == 'Linux'
+        run: bash tests/test_install.sh
+      - name: Check PowerShell 7 installation
         if: runner.os == 'Windows'
         shell: pwsh
+        run: ./tests/test_install.ps1
+      - name: Check Windows PowerShell 5.1 installation
+        if: runner.os == 'Windows'
+        shell: powershell
         run: ./tests/test_install.ps1
 
   local-links:
