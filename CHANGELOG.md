@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-22 — Portable Bash checkout and evaluation inputs
+
+- Keep Bash scripts in LF on Windows Git checkouts and exercise the installer with `core.autocrlf=true` in CI.
+- Validate explicit invocation at the start of each application session, including after a reset. Reject skill-name hints in activation and policy-routing messages.
+- Reject workspace fixture files whose paths collide under case-insensitive comparison or serve as another file's parent directory.
+
 ## 2026-11-22 — Standalone installers and Bash coverage
 
 ### Changed

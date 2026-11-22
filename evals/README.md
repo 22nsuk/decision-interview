@@ -27,7 +27,8 @@ disables Python's UTF-8 mode for those checks, so Windows can expose dependence
 on its default file encoding. A Windows runner does not by itself establish
 execution under Korean cp949; report the observed encoding with the result.
 Installation checks execute the standalone scripts used by both READMEs:
-`tests/test_install.sh` on Ubuntu, and `tests/test_install.ps1` under both
+`tests/test_install.sh` on Ubuntu from a fresh `core.autocrlf=true` checkout,
+and `tests/test_install.ps1` under both
 PowerShell 7 and Windows PowerShell 5.1 on Windows. They use disposable
 destinations without changing `HOME`. They cover copied file contents and layout,
 hidden/nested files, literal paths, source resolution outside the repository,
@@ -79,7 +80,7 @@ than silently ignoring host applicability or session resets.
 | `hosts` | Yes | Eligible profiles from the table below. This is applicability, not evidence that those profiles were tested. |
 | `user_messages` | Yes | Task inputs delivered in order, waiting for each assistant response. |
 | `fixture` | No | Additional task material supplied as data, including any adversarial reference text. |
-| `workspace_files` | No | Relative-path-to-text map to materialize in an isolated workspace. Paths must stay within that workspace. |
+| `workspace_files` | No | Relative-path-to-text map within the isolated workspace. File paths must be distinct under case-insensitive comparison. A file cannot also serve as a parent directory. |
 | `session_reset` | No | A real new session before the specified 1-based message index, carrying only the preceding assistant handoff. |
 | `expected_properties` | Yes | Evaluator-only outcome criteria; never give these to the executing agent. |
 | `required_evidence` | Yes | Evaluator-only evidence and execution requirements. |
@@ -105,11 +106,12 @@ Codex's metadata policy is described in the
 Record the host version and effective settings; stale or competing skill copies
 can invalidate the setup.
 
-Before delivering an explicit invocation in Claude Code, replace the leading
-`$decision-interview` in a task message with `/decision-interview`. Keep the rest
-of the task unchanged and retain the delivered input in the trace. Natural-
-language activation inputs contain neither command nor skill name; do not add
-one to make them pass.
+In the case file, the first message of each application session starts with
+`$decision-interview` as a separate token. This also applies to the message
+identified by `session_reset.before_message`. Before delivering it in Claude Code,
+replace the leading token with `/decision-interview`. Keep the rest of the task
+unchanged and retain the delivered input in the trace. Keep the skill name
+and both command forms out of every activation and policy-routing user message.
 
 Activation-positive and activation-negative cases run only in automatic
 profiles. The separate `policy-routing` case checks that an explicit-only host

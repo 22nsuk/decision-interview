@@ -42,9 +42,11 @@ jobs:
           PYTHONWARNDEFAULTENCODING: '1'
           PYTHONWARNINGS: error::EncodingWarning
         run: python -m unittest discover -s tests
-      - name: Check Bash installation
+      - name: Check Bash installation from a core.autocrlf=true checkout
         if: runner.os == 'Linux'
-        run: bash tests/test_install.sh
+        run: |
+          git -c core.autocrlf=true clone --quiet . "$RUNNER_TEMP/install-checkout"
+          bash "$RUNNER_TEMP/install-checkout/tests/test_install.sh"
       - name: Check PowerShell 7 installation
         if: runner.os == 'Windows'
         shell: pwsh

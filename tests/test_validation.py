@@ -59,6 +59,38 @@ class ValidationTests(unittest.TestCase):
         self.data["cases"].append(deepcopy(self.data["cases"][0]))
         self.assertTrue(any("duplicate case id" in e for e in validation.case_errors(self.data)))
 
+    def test_routing_inputs_cannot_hint_at_the_skill(self):
+        for kind in ("activation-positive", "activation-negative", "policy-routing"):
+            case = next(c for c in self.data["cases"] if c["kind"] == kind)
+            for messages in (
+                ["$decision-interview Review my plan."],
+                ["/decision-interview"],
+                ["Review my plan.", "Try Decision-Interview."],
+            ):
+                with self.subTest(kind=kind, messages=messages):
+                    case["user_messages"] = messages
+                    errors = list(validation.case_errors({"cases": [case]}))
+                    location = f"{case['id']}:user_messages[{len(messages)}]"
+                    self.assertTrue(any(location in e for e in errors), errors)
+            case["user_messages"] = ["Compare decision-interviewers and decision-interview-notes."]
+            self.assertEqual([], list(validation.case_errors({"cases": [case]})))
+
+    def test_application_requires_invocation_at_each_session_start(self):
+        case = next(c for c in self.data["cases"] if "session_reset" in c)
+        valid_messages = ["$decision-interview Start.", "Stop here.", "$decision-interview"]
+        case["user_messages"] = valid_messages
+        self.assertEqual([], list(validation.case_errors({"cases": [case]})))
+        for turn in (1, 3):
+            for invalid in (
+                "Continue.", "Try $decision-interview", "/decision-interview Start.",
+                "$decision-interview-extra Start.",
+            ):
+                with self.subTest(turn=turn, invalid=invalid):
+                    case["user_messages"] = valid_messages.copy()
+                    case["user_messages"][turn - 1] = invalid
+                    errors = list(validation.case_errors({"cases": [case]}))
+                    self.assertTrue(any(f"user_messages[{turn}]" in e for e in errors), errors)
+
     def test_fixture_path_boundaries(self):
         case = self.data["cases"][0]
         case["workspace_files"] = {"fixtures/입력.txt": "", "index.html": "content"}
@@ -68,6 +100,23 @@ class ValidationTests(unittest.TestCase):
             with self.subTest(path=path):
                 case["workspace_files"] = {path: "fixture"}
                 self.assertTrue(list(validation.case_errors(self.data)))
+
+    def test_fixture_files_cannot_alias_or_be_parent_directories(self):
+        case = self.data["cases"][0]
+        for first, second in (
+            ("Notes.txt", "notes.txt"),
+            ("notes", "notes/day.txt"),
+            ("자료/Notes", "자료/notes/week/day.txt"),
+        ):
+            for paths in ((first, second), (second, first)):
+                with self.subTest(paths=paths):
+                    case["workspace_files"] = dict.fromkeys(paths, "")
+                    errors = list(validation.case_errors(self.data))
+                    self.assertTrue(any(
+                        case["id"] in e and repr(first) in e and repr(second) in e for e in errors
+                    ), errors)
+        case["workspace_files"] = {"notes/a.txt": "", "notes/b.txt": "", "notebook": "", "note": ""}
+        self.assertEqual([], list(validation.case_errors(self.data)))
 
     def test_reset_requires_an_existing_next_message(self):
         case = next(c for c in self.data["cases"] if "session_reset" in c)

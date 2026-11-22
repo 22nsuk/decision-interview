@@ -7,6 +7,7 @@ owned by lychee. These checks do not execute or grade behavioral scenarios.
 
 import json
 from pathlib import Path, PurePosixPath, PureWindowsPath
+import re
 import sys
 
 from jsonschema import Draft202012Validator, SchemaError
@@ -14,6 +15,9 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SKILL_NAME_IN_TEXT = re.compile(
+    r"(?<![a-z0-9_-])decision-interview(?![a-z0-9_-])", re.IGNORECASE | re.ASCII
+)
 METADATA_SCHEMA = {
     "type": "object",
     "required": ["interface", "policy"],
@@ -91,20 +95,50 @@ def safe_workspace_path(path):
     )
 
 
+def invocation_errors(case, label):
+    messages = case["user_messages"]
+    reset_turn = case.get("session_reset", {}).get("before_message")
+    if reset_turn is not None and reset_turn > len(messages):
+        yield f"{label}: session_reset exceeds message count"
+
+    for turn, message in enumerate(messages, start=1):
+        if case["kind"] == "application":
+            if turn in (1, reset_turn) and not re.match(r"\$decision-interview(?:\s|$)", message):
+                yield f"{label}:user_messages[{turn}]: start the session with $decision-interview"
+        elif SKILL_NAME_IN_TEXT.search(message):
+            yield f"{label}:user_messages[{turn}]: routing input contains the skill name"
+
+
+def workspace_file_errors(paths, label):
+    # Use the same case-insensitive comparison on every validator host.
+    files = {}
+    for path in paths:
+        if not safe_workspace_path(path):
+            yield f"{label}: unsafe workspace path: {path!r}"
+            continue
+        key = PureWindowsPath(path)
+        if key in files:
+            yield f"{label}: workspace file {path!r} conflicts with {files[key]!r}"
+        else:
+            files[key] = path
+
+    for key, path in files.items():
+        for parent in key.parents:
+            if parent in files:
+                yield f"{label}: workspace file {files[parent]!r} is also a directory for {path!r}"
+
+
 def case_errors(data):
-    """Check relationships JSON Schema cannot express without custom keywords."""
+    """Check case relationships and portable inputs after schema validation."""
     seen = set()
     for case in data["cases"]:
         case_id = case["id"]
         if case_id in seen:
             yield f"evals/cases.json: duplicate case id: {case_id}"
         seen.add(case_id)
-        for path in case.get("workspace_files", {}):
-            if not safe_workspace_path(path):
-                yield f"evals/cases.json:{case_id}: unsafe workspace path: {path!r}"
-        reset = case.get("session_reset")
-        if reset and reset["before_message"] > len(case["user_messages"]):
-            yield f"evals/cases.json:{case_id}: session_reset exceeds message count"
+        label = f"evals/cases.json:{case_id}"
+        yield from invocation_errors(case, label)
+        yield from workspace_file_errors(case.get("workspace_files", {}), label)
 
 
 def validate_repo(root):
