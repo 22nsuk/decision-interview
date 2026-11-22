@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-23 — Waiting for answers and developing a concrete plan
+
+- Keep a question pending across delays. Use a chat question when the host's choice UI expires or its waiting behavior is unknown.
+- Compare alternatives through the same example and explain the consequence and tradeoff of each. Follow up on combined choices when their interaction matters.
+- Check a representative use before handing off a concrete plan. Add two evaluation cases covering a delayed reply and a design with an unresolved interaction.
+
 ## 2026-11-22 — Portable Bash checkout and evaluation inputs
 
 - Keep Bash scripts in LF on Windows Git checkouts and exercise the installer with `core.autocrlf=true` in CI.

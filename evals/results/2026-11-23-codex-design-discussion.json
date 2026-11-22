@@ -1,0 +1,53 @@
+{
+  "date_seoul": "2026-11-23",
+  "case_variant_of": "combined-choice-design",
+  "input_change": "The first message requests planning and discussion only. The original case includes authorization to build, which this variant does not evaluate.",
+  "profile": "codex-explicit",
+  "candidate_files_sha256": {
+    "SKILL.md": "65379ed29665853f7b942a6547c3cf3bf54834114af923a0ec55e33f85a58e99",
+    "agents/openai.yaml": "eb64f0dc634e2335f4a06748cbcca455012a63fe45e6fa6fe69eaff94ccf85e3"
+  },
+  "host": "codex-cli 0.171.0-alpha.13, app-server over stdio on Windows",
+  "model_returned_by_thread_start": "gpt-6.2-sol",
+  "reasoning_effort": "medium",
+  "settings": {
+    "workspace": "Fresh temporary directory",
+    "thread": "ephemeral",
+    "sandbox": "read-only",
+    "approval_policy": "never",
+    "apps": false,
+    "choice_ui": "Text client with no choice widget"
+  },
+  "invocation": "skills/list returned the enabled user-scope package. The first turn used the raw text and a native skill input naming decision-interview and its installed SKILL.md. Skill-body loading was not separately instrumented.",
+  "protocol": "One attempt with three turns. Provide each user message only after the previous turn completes.",
+  "turns": [
+    {
+      "user": "$decision-interview 화분 하나를 돌보는 짧은 턴제 게임을 기획하고 싶어. 오늘은 논의만 하자. 물을 주거나 그늘로 옮기는 행동이 있어. 한 턴의 선택이 다음 턴에 이어지는 방식을 몇 가지 비교해서 나랑 먼저 정해보자.",
+      "assistant_messages": [
+        "`decision-interview` 스킬을 써서, 같은 상황에서 오늘의 행동이 내일을 어떻게 바꾸는지 비교해볼게.",
+        "흙이 조금 마른 오후야. 오늘은 **물을 주기**와 **그늘로 옮기기** 중 하나를 할 수 있고, 내일도 햇볕이 강해. 이 상황에서 오늘의 선택을 내일로 넘기는 방식이 세 가지 있어.\n\n| 방식 | 오늘의 선택이 내일에 남기는 것 | 플레이 감각 |\n|---|---|---|\n| **흙 상태가 남는다** | 물을 주면 흙이 촉촉해져. 오늘 하루 그늘에 두면 지금 남은 수분이 덜 줄어. 내일은 그렇게 남은 수분을 보고 다시 행동을 골라. | 선택의 결과가 바로 보여서 짧은 게임에서도 규칙을 익히기 쉬워. |\n| **효과가 늦게 온다** | 물을 주면 내일 턴 시작에 뿌리가 물을 흡수해. 그늘로 옮기면 오늘 당장 흙이 마르는 속도가 줄어. | 오늘 버틸지, 내일 회복을 미리 걸어둘지 고민하게 돼. 물 효과가 언제 오는지 화면에 보여줘야 해. |\n| **화분 자리가 유지된다** | 그늘로 옮기면 내일도 그늘에 있어. 내일 물을 줘도 자리는 그대로야. 계속 두면 수분을 아끼지만, 햇빛이 필요해지면 다시 옮기는 데 한 턴을 써. | 한 번 옮겨서 며칠을 편하게 보낼 수 있어. 수분과 함께 빛도 살피게 돼. |\n\n짧은 게임에서 **내일 아침 화분을 보고 바로 판단하는 맛**을 살리고 싶다면 1번을 추천해. 그늘로 옮기는 행동 자체를 며칠짜리 결정으로 만들고 싶다면 3번이 잘 맞아.\n\n**다음 턴에서 가장 느끼고 싶은 건 어느 쪽이야?** ① 어제 남겨 둔 수분을 보고 돌보기, ② 어제 미리 걸어 둔 효과를 받아보기, ③ 어제 정한 자리를 유지할지 다시 판단하기. 조합도 좋아."
+      ],
+      "status": "completed"
+    },
+    {
+      "user": "두 행동은 매번 다 고를 수 있으면 좋겠어. 앞에서 한 일이 다음 선택의 결과를 바꿨으면 해. 화면 배치는 맡길게.",
+      "assistant_messages": [
+        "매 턴 **물 주기**와 **그늘로 옮기기**를 둘 다 고를 수 있게 하자. 앞선 행동은 다음 행동의 결과에 반영하고, 화면 배치는 내가 맡을게.\n\n어제 물을 줘서 오늘도 흙이 촉촉한 상황에서, **오늘 또 물을 주면** 두 가지 결과가 가능해.\n\n1. **효과가 작아진다.** 이미 촉촉해서 물을 더 줘도 얻는 게 거의 없어. 흙 상태를 읽고 행동을 바꾸면 이득이고, 같은 행동을 반복해도 부담은 작아.\n2. **과습이 생긴다.** 촉촉한 흙에 물을 더 주면 잎이 처져. 그늘로 옮기면 흙이 더 천천히 마르니까, 어제 물을 준 뒤에는 그늘도 상황에 따라 득실이 생겨.\n\n짧고 편안한 돌봄 게임을 떠올린다면 **1번**을 추천해. 어제의 행동이 오늘의 판단을 바꾸고, 한 번 잘못 골라도 다음 턴에 만회하기 쉬워.\n\n**이미 촉촉한 흙에 또 물을 주면, 효과가 작아지는 정도가 좋아? 아니면 과습으로 화분 상태가 나빠지는 쪽이 좋아?**"
+      ],
+      "status": "completed"
+    },
+    {
+      "user": "흙에 물기가 남아 있으면 그늘로 옮겼을 때 다음 날까지 촉촉함이 유지되게 하자. 오늘은 여기서 멈추고 정리해줘.",
+      "assistant_messages": [
+        "화분 하나를 돌보는 짧은 턴제 게임으로, 오늘은 아래 규칙까지 정했어.\n\n- 매 턴 **물 주기**와 **그늘로 옮기기**를 둘 다 선택할 수 있어.\n- 앞선 행동이 남긴 흙 상태에 따라 다음 행동의 결과가 달라져.\n- **흙에 물기가 남아 있을 때 그늘로 옮기면, 다음 날까지 흙이 촉촉하게 유지돼.** 예를 들어 어제 준 물이 오늘도 남아 있다면, 오늘 그늘로 옮겨 내일까지 그 촉촉함을 이어갈 수 있어.\n\n이미 촉촉한 흙에 다시 물을 줬을 때의 효과는 열어뒀어. 화면 배치는 내가 맡기로 했고, 오늘은 이 규칙을 정리하는 데서 마무리했어."
+      ],
+      "status": "completed"
+    }
+  ],
+  "observed_tool_calls": [],
+  "judgment": {
+    "observed_behavior": "pass for the planning-only variant",
+    "observation": "Compared three mechanisms from the same starting position, then asked whether watering already-moist soil should yield diminishing returns or harm the plant. At the stop request, preserved the chosen shade effect and left the repeated-watering rule open.",
+    "limits": "The build-authorized case, graphical cards, automatic routing, and causal improvement over a control were not tested."
+  }
+}

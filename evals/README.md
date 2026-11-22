@@ -181,7 +181,8 @@ answer, correction, and handoff paths. Inspect these cases as examples of the
 required boundaries; source review is not a run of them.
 
 The initial revision reported structural checks and an independent source
-review on 2026-11-22. This expanded suite contains **21 scenarios**. Its presence
+review on 2026-11-22. The suite now contains **23 scenarios**, including a delayed
+reply and a combined-choice design with an unresolved interaction. Its presence
 and any passing repository checks do not establish behavioral results.
 
 The review of revision `04880f6` covered the skill, documentation, then-current
@@ -197,14 +198,25 @@ and tests Bash as well as both Windows PowerShell hosts. Results must be read
 against the revision and environment actually checked; the interview skill and
 21 model scenarios are unchanged by this installation follow-up.
 
-**Native attempts: 1; completed responses: 0; behaviorally scored cases: 0.**
+**2026-11-22 native run: one attempt, no completed responses or scored cases.**
 The [2026-11-22 Codex attempt](results/2026-11-22-native-codex.json) exited during
 host initialization with a read-only-filesystem error, before any routing or
 model response. Two further planned cases were not attempted after that shared
 blocker. The requested model was not resolved, so its support is also unknown.
 This is an infrastructure result, not an activation pass or a skill-behavior failure.
 
-Native Codex/Claude activation, live multi-turn behavior, native compaction,
-tool-boundary enforcement, and comparative quality or cost remain unverified.
+In the [2026-11-23 late-reply trial](results/2026-11-23-codex-late-choice.json),
+a native Codex text client explicitly invoked the installed skill. Both turns
+completed. The observed behavior passed the delayed-reply criteria in one
+attempt: after 122 seconds with no intervening question or action, the assistant
+accepted the custom answer and closed as requested.
+
+A separate [three-turn planning trial](results/2026-11-23-codex-design-discussion.json)
+compared three rules in a common situation, then asked about a concrete consequence
+after the user combined elements. The handoff retained the chosen rule and the
+remaining open question. This discussion-only variant does not score the original
+build-authorized case. Desktop choice-card expiry,
+automatic selection, Claude Code behavior, native compaction, tool-boundary
+enforcement, and comparative quality or cost remain unverified.
 Report actual CI and local-check outcomes against the revision they checked;
 do not reuse an old pass as evidence for changed inputs.

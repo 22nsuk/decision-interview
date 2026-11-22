@@ -67,7 +67,7 @@ ask the user for the decision only when human judgment remains necessary.
 
 ## Ask and follow through
 
-Ask one focused question at a time and wait for the answer. A short batch is
+Ask one focused question at a time. A short batch is
 appropriate only when it reduces effort, contains genuinely independent
 questions, and suits the user's preference. Do not put a question and its
 prerequisite in the same batch. Include a brief reason when it is not obvious
@@ -78,19 +78,29 @@ Choose the question form for the uncertainty:
 - **Discover intent:** ask an open question in the user's terms. Do not attach
   suggested goals or assume an audience, business model, or solution they have
   not chosen. Explain a confusing term neutrally when needed.
-- **Choose among understood alternatives:** present a few concrete options and
-  their tradeoffs. Recommend one when the evidence supports it, identify your
-  assumptions, and allow a different answer, correction, or "I don't know."
+- **Choose among understood alternatives:** compare plausible options in the
+  same situation. For each, say what someone would actually do, what would
+  change for them, and the tradeoff that could swing the choice. Keep labels
+  short. Recommend one when the evidence supports it and name your assumption.
+  Accept a combination, correction, different answer, or "I don't know."
 - **Test a consequential assumption:** ask for an example, counterexample,
   failure case, boundary, or evidence that would change the decision. Build on
   the user's last answer or inspected evidence. Accept a well-supported answer;
   do not require disagreement or challenge every answer mechanically.
 
-For a bounded choice, use the host's structured choice UI when it is available
-and permits custom or uncertain answers; keep intent discovery open-ended.
-Otherwise use short numbered or named options that accept a number or keyword.
-Interpret short replies against the options actually shown, asking only if
-their meaning is ambiguous. Do not force an option count to fill a UI.
+Set no reply deadline unless the user supplies one. For a bounded choice, use
+a choice UI when it keeps the question open until answered and accepts a custom
+reply. If it expires, picks a default on timeout, or its behavior is unknown, ask
+once in chat with numbered or named options. Keep intent discovery open-ended.
+Put any detail that does not fit a button in the accompanying question.
+After asking, leave that decision pending until the user replies or redirects.
+A tool returning, a wait interval ending, or a preselection is not an answer.
+Yield to the user without repeating the prompt or starting work that relies on
+the missing choice. Honor a deadline or default the user explicitly sets.
+Map short answers to the options shown. If the user wants elements of several
+options, record which outcomes they want to keep. Treat a mechanism you invent
+to combine them as a proposal. Ask how they should interact in a concrete case
+when different rules would change the result.
 
 Use these forms selectively, without a fixed sequence, minimum question count,
 quota of alternatives, or numeric ambiguity score. Before drilling deeper,
@@ -157,11 +167,13 @@ Do not repeat a full ledger after each answer.
 
 ## Stop and hand off
 
-Respect the user's depth, time, and question budget. Without a stated budget,
-keep the session proportionate: after a few substantive answers, assess whether
-another question is likely to change the outcome. This is a checkpoint, not a
-question quota or a new approval requirement. If it still matters, continue
-within the requested depth; otherwise close.
+Respect the user's depth, time, and question budget. When they want a concrete
+plan, try walking through one representative use from the starting situation,
+through a person's decision, to an observable result. If two materially
+different outcomes still fit their answers, ask the question that separates
+them. A reference, a style, or a list of features may establish direction while
+leaving the central behavior open. An example you offered remains a proposal
+unless the user chose it or delegated that decision.
 
 Stop when consequential choices are sufficiently settled for the intended next
 step, when progress requires unavailable evidence, when the budget is reached, or
@@ -177,8 +189,10 @@ Judge sufficient clarity against the intended next action:
   only later work. An evidence-gathering experiment can be ready while launch
   is blocked.
 
-Apply these criteria proportionately; a small next step does not require a
-complete project specification. Readiness and permission are separate checks.
+Apply these criteria to the next action the user actually wants. Being able
+to start a convenient subtask does not settle the design they asked to work
+out. Once the material choices are resolved or delegated, proceed within the
+existing permission without polling for routine details.
 
 Distinguish what can proceed from what remains blocked. Do not call a scope ready
 because questions ran out, wording stabilized, or unresolved items were deferred.

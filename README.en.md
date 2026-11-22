@@ -12,7 +12,8 @@ It preserves agreed conditions and closes with decisions, open questions, and a 
 - Check the conversation and supplied evidence before asking; separate discoverable facts from human choices.
 - Keep pending topics and relevant dependencies in a short, visible conversation recap, normally asking one question at a time.
 - Use open questions for intent, concrete alternatives for bounded choices, and examples or counterexamples for consequential assumptions.
-- Use a suitable host choice UI when available, or short numbered/named options that accept brief replies and custom answers.
+- Compare options in the same situation, showing the action, its consequence, and the cost of choosing it. Accept combinations.
+- Leave questions open until the user answers or changes direction, subject to any deadline they set. If a choice UI expires or its waiting behavior is unknown, ask once in chat using numbered or named options.
 - Separate decisions, verified facts, proposals, and uncertainty; preserve exact quantities, exclusions, exceptions, and ordering.
 - Revisit only affected choices after a revision. Resolve conflicting requirements and unclear delegation at the necessary boundary.
 - Turn repeated deferrals into evidence gathering or a next step. Exclude credentials and minimize personal information in recaps and handoffs.
@@ -24,6 +25,8 @@ The skill instructions are in English; the conversation follows the user's langu
 
 Assess the intended next action: its outcome, scope, and consequential constraints must be specific,
 and choices that would change it must be settled or explicitly delegated.
+For a concrete plan, walk through one representative choice and its observable result.
+If the answers still allow materially different outcomes, ask what distinguishes them.
 Remaining unknowns must have a bounded treatment that permits that action, or affect only later work.
 For example, a performance experiment can be ready while launch remains blocked on its results.
 A stop request, exhausted budget, or missing evidence can also end the interview; distinguish
@@ -57,6 +60,11 @@ Help me clarify the problem through questions.
 $decision-interview Review this migration plan through questions.
 Focus on downtime and recovery conditions. Do not implement it yet.
 ```
+
+For example, if one of 100 records fails validation, what should the operator see?
+
+1. **Hold the batch.** The old data stays in use until the error is fixed. The operator can reconcile one batch, but the other 99 records must wait.
+2. **Apply the 99 valid records.** They become usable immediately. The operator has to retry the held record later and check that it was included.
 
 **Set depth and delegation**
 
@@ -220,7 +228,7 @@ Pushes and pull requests check local documentation links. External links run onl
 Actions **Run workflow** (`workflow_dispatch`), so external outages or rate limits cannot
 fail ordinary commit CI. A manually requested external-link check still fails on broken links.
 
-The [evaluation guide](evals/README.md), [21 cases](evals/cases.json), and
+The [evaluation guide](evals/README.md), [23 cases](evals/cases.json), and
 [JSON Schema](evals/cases.schema.json) are outside the installed skill.
 CI does not converse with models or test natural-language activation.
 Actual routing, retention, and question quality need recorded host trials.
