@@ -1,0 +1,7 @@
+# Local links are checked with --offline; HTTP results run in a separate job.
+timeout = 20
+max_retries = 2
+max_concurrency = 4
+include_fragments = "full"
+accept_timeouts = false
+skip_missing = false

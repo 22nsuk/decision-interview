@@ -2,9 +2,9 @@
 name: decision-interview
 description: >-
   Clarify a vague idea or pressure-test a plan through a focused, user-requested
-  interview. Use when the user explicitly asks to be interviewed, asks for a
-  Socratic or grilling session, or invokes decision-interview to work through
-  consequential choices. Do not turn an ordinary implementation request,
+  interview. Use when the user asks to review a plan through questions, asks to
+  be interviewed or for a Socratic or grilling session, or invokes
+  decision-interview to work through consequential choices. Do not turn an ordinary implementation request,
   factual question, code review, or fully specified edit into an interview.
   A vague request alone is not permission to start an extended interview.
 ---
@@ -46,9 +46,11 @@ success criteria, and unresolved choices. Reuse existing answers. Keep separate
 deliverables visible, but do not make this list a questionnaire or force every
 category into a small task.
 
-Choose the next question by its likely effect on the outcome, remaining
-uncertainty, and whether its prerequisites are settled. Resolve an upstream
-choice before asking questions that assume its answer. A fact still being
+Keep a short working queue when several topics are pending, noting prerequisites
+where they matter. Acknowledge the user's agenda without asking everything at
+once. Choose the next question by its likely effect on the outcome, remaining
+uncertainty, and settled prerequisites. Resolve an upstream choice before asking
+questions that assume its answer; retain the other topics. A fact still being
 checked blocks only decisions that depend on it.
 
 Separate what exists from what should change. When evidence conflicts with a
@@ -77,6 +79,12 @@ Choose the question form for the uncertainty:
   the user's last answer or inspected evidence. Accept a well-supported answer;
   do not require disagreement or challenge every answer mechanically.
 
+For a bounded choice, use the host's structured choice UI when it is available
+and permits custom or uncertain answers; keep intent discovery open-ended.
+Otherwise use short numbered or named options that accept a number or keyword.
+Interpret short replies against the options actually shown, asking only if
+their meaning is ambiguous. Do not force an option count to fill a UI.
+
 Use these forms selectively, without a fixed sequence, minimum question count,
 quota of alternatives, or numeric ambiguity score. Before drilling deeper,
 check whether another unresolved part would change the outcome more. Prefer
@@ -84,13 +92,17 @@ one concrete scenario over a list of speculative edge cases.
 
 Respect choices the user has delegated. Make routine decisions within that
 scope, briefly label consequential defaults as your proposals, and surface
-only tradeoffs that exceed the delegation or change the agreed outcome.
+only tradeoffs that exceed the delegation or change the agreed outcome. If the
+delegation's boundary is unclear and affects a consequential choice, ask about
+that boundary; keep settled permission and unaffected work intact.
 
 Treat "I don't know" as information, not a demand for another guess. Explain,
 inspect, propose a bounded experiment or prototype, or record a deferral as
 appropriate. Carry out only already-authorized work. If the answer depends on
-seeing or measuring something, stop rephrasing the same question and identify
-the evidence needed.
+seeing or measuring something, identify the evidence needed. When clarification
+adds no useful information, record the deferral and move to an independent
+decision. If no useful decision can proceed, close with the missing evidence
+and next step; do not cycle through deferred questions.
 
 ## Keep the decision state accurate
 
@@ -107,19 +119,33 @@ external memory by default. Distinguish:
 Preserve exact decision-bearing numbers, units, negations, exceptions, ordering,
 and conditions when summarizing. Keep a short original excerpt when a paraphrase
 could change a consequential meaning. Do not invent reasons for a user's choice.
+Exclude passwords, API keys, and other credentials from recaps and handoffs;
+use a role-based placeholder if their existence matters. Include only personal
+information needed for the next task, without losing relevant constraints.
 
 Record clear answers directly. Confirm only an ambiguous reply, a conflicting
 choice, or a material interpretation added by your synthesis. Silence and a
 recommendation are not agreement; attach a clear acceptance only to the options
 actually shown. Avoid asking the user to approve an unchanged answer again.
 
+Distinguish a clear revision from simultaneously incompatible requirements.
+For a real conflict, explain which conditions cannot hold together and ask for
+the necessary priority or change. Do not silently drop a condition or treat a
+proposed compromise as accepted.
+
 When a decision changes, replace its active value, retain a brief rationale or
 history when useful, and revisit only the assumptions, dependent choices, and
-acceptance criteria affected by the change. Keep unrelated settled decisions.
+acceptance criteria affected by the change. A dependency matters when a changed
+answer alters another choice's justification, feasibility, constraint, or
+acceptance test; track those links without requiring a formal graph. Keep
+unrelated settled decisions.
 After a handoff or context gap, reconstruct this state from available records;
-do not invent missing agreement or reopen everything by default.
+mark missing material agreement unknown and ask only what is necessary to resume.
+Do not invent agreement or reopen everything by default.
 
 Show a short recap at a meaningful decision point, correction, pause, or handoff.
+Briefly name what is settled and the next issue; mention the count of known
+pending topics only when useful, without implying the list is exhaustive.
 Do not repeat a full ledger after each answer.
 
 ## Stop and hand off
@@ -131,7 +157,7 @@ question quota or a new approval requirement. If it still matters, continue
 within the requested depth; otherwise close.
 
 Stop when consequential choices are sufficiently settled for the intended next
-step, when progress requires outside evidence, when the budget is reached, or
+step, when progress requires unavailable evidence, when the budget is reached, or
 when the user says to stop. Never ask a final confirmation merely to permit
 stopping. Record a useful final answer before closing when the user supplies one.
 
@@ -140,13 +166,17 @@ because questions ran out, wording stabilized, or unresolved items were deferred
 Name a blocker and the smallest evidence or decision needed to resolve it. Keep
 any unaffected, already-authorized work eligible to continue.
 
-Give a concise handoff suited to the task, combining or omitting empty fields:
+Give a concise handoff in the user's language. Adapt this skeleton to the task,
+combining or omitting empty fields rather than filling them mechanically:
 
-- Intended outcome, scope, and non-goals.
-- Important decisions and reasons, separate from verified facts and proposals.
-- Constraints and observable acceptance criteria.
-- Open items, their effect on the next step, and how to resolve them.
-- The useful next action and its existing authorization boundary.
+```text
+Goal / scope / non-goals:
+Decisions / user-given reasons:
+Verified facts / proposals (kept distinct):
+Constraints / observable acceptance criteria:
+Open or deferred items: impact; evidence or decision needed
+Next action / existing permission:
+```
 
 Check this handoff against the answers, especially precise conditions and revised
 decisions. Reuse an existing spec or record when a write to it is already in scope;

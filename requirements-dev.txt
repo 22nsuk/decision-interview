@@ -1,0 +1,4 @@
+# Development checks only; the installed skill has no Python dependencies.
+skills-ref @ git+https://github.com/agentskills/agentskills.git@83021e2be457a9b6679148719c1f6074f0ad975e#subdirectory=skills-ref
+PyYAML==6.0.3
+jsonschema==4.26.0

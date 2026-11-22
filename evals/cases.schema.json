@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Decision Interview evaluation cases",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "purpose",
+    "cases"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "./cases.schema.json"
+    },
+    "schema_version": {
+      "const": 2
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/case"
+      }
+    }
+  },
+  "$defs": {
+    "host": {
+      "enum": [
+        "codex-explicit",
+        "codex-auto",
+        "claude-on",
+        "claude-user-invocable-only"
+      ]
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "hosts",
+        "user_messages",
+        "expected_properties",
+        "required_evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "kind": {
+          "enum": [
+            "activation-positive",
+            "activation-negative",
+            "policy-routing",
+            "application"
+          ]
+        },
+        "hosts": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/host"
+          }
+        },
+        "user_messages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "fixture": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workspace_files": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "session_reset": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "before_message",
+            "carry_forward"
+          ],
+          "properties": {
+            "before_message": {
+              "type": "integer",
+              "minimum": 2
+            },
+            "carry_forward": {
+              "const": "previous-assistant-handoff"
+            }
+          }
+        },
+        "expected_properties": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required_evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "activation-positive",
+                  "activation-negative"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hosts": {
+                "items": {
+                  "enum": [
+                    "codex-auto",
+                    "claude-on"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "policy-routing"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "hosts": {
+                "items": {
+                  "enum": [
+                    "codex-explicit",
+                    "claude-user-invocable-only"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "session_reset"
+            ]
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "const": "application"
+              },
+              "user_messages": {
+                "minItems": 2
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

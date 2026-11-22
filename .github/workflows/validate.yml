@@ -1,0 +1,62 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  structure:
+    name: Skill format and evaluation schema
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Install development validators
+        run: python -m pip install -r requirements-dev.txt
+      - name: Validate Agent Skills format
+        run: skills-ref validate skills/decision-interview
+      - name: Validate Codex metadata and evaluation schema
+        run: python scripts/validate.py
+      - name: Check validator failure detection
+        run: python -m unittest discover -s tests
+
+  local-links:
+    name: Local documentation links
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          lycheeVersion: v0.24.2
+          args: --config .lychee.toml --offline --no-progress './**/*.md'
+          token: ''
+          fail: true
+          failIfEmpty: true
+
+  network-links:
+    name: External documentation links
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          lycheeVersion: v0.24.2
+          args: --config .lychee.toml --scheme http --scheme https --no-progress './**/*.md'
+          token: ''
+          fail: true
+          failIfEmpty: true

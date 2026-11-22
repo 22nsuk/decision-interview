@@ -1,0 +1,109 @@
+{
+  "recorded_at": "2026-11-22T07:04:38.939912+00:00",
+  "scope": "Native host attempt; no model response or behavioral verdict",
+  "candidate_files_sha256": {
+    "SKILL.md": "7b1629c7f2a5ff607a56772cc36be5923a7151de3daad56a8dc6d7ec013ab81f",
+    "agents/openai.yaml": "eb64f0dc634e2335f4a06748cbcca455012a63fe45e6fa6fe69eaff94ccf85e3"
+  },
+  "host_version": "codex-cli 0.172.0-alpha.2",
+  "requested_model": "GPT-6.1 Sol High (CLI gpt-6.1-sol, model_reasoning_effort=high)",
+  "resolved_model": null,
+  "observed_model": null,
+  "model_support": "Unverified because host initialization failed before dispatch.",
+  "planned_cases": [
+    {
+      "id": "natural-language-plan",
+      "profile": "codex-auto"
+    },
+    {
+      "id": "diff-review",
+      "profile": "codex-auto"
+    },
+    {
+      "id": "korean-condition-retention",
+      "profile": "codex-explicit"
+    }
+  ],
+  "budget": {
+    "maximum_attempts_per_case": 1,
+    "total_time_limit_seconds": 600,
+    "stop_on_shared_host_initialization_failure": true
+  },
+  "policy_override": "Cases 1–2 only: disposable copied agents/openai.yaml changed allow_implicit_invocation from false to true; case 3 retained shipped false.",
+  "attempts": [
+    {
+      "case_id": "natural-language-plan",
+      "profile": "codex-auto",
+      "command": [
+        "codex",
+        "--no-daemon",
+        "exec",
+        "--ignore-user-config",
+        "--sandbox",
+        "read-only",
+        "-c",
+        "approval_policy=\"never\"",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "--json",
+        "-m",
+        "gpt-6.1-sol",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-C",
+        "<trial-workspace>",
+        "-o",
+        "<final-message-file>",
+        "--disable",
+        "apps",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "browser_use",
+        "--disable",
+        "browser_use_external",
+        "--disable",
+        "computer_use",
+        "--disable",
+        "plugins",
+        "-"
+      ],
+      "command_path_note": "Temporary paths are normalized; all other arguments are retained.",
+      "stdin": "내 계획을 질문으로 검토해줘. 동네 도서관 예약 알림을 만들려는데 누구의 어떤 불편부터 해결할지 함께 따져보고 싶어.",
+      "stdout": "",
+      "stderr": "Error: failed to initialize in-process app-server client: Read-only file system (os error 30)\n",
+      "status": {
+        "exit_code": 1,
+        "seconds": 8.961935018999611,
+        "timeout": false
+      },
+      "assistant_response": null,
+      "availability": "unverified",
+      "selection": "unverified",
+      "loading": "unverified",
+      "grade": "insufficient-evidence",
+      "observation": "Host initialization failed before a thread or model response was produced."
+    }
+  ],
+  "accounting": {
+    "planned_cases": 3,
+    "attempted_cases": 1,
+    "attempts": 1,
+    "native_completed_with_response": 0,
+    "scored_behavior_cases": 0,
+    "cancelled": 0,
+    "unresolved_processes": 0,
+    "remaining_cases_not_attempted": 2
+  },
+  "not_attempted": [
+    {
+      "case_id": "diff-review",
+      "reason": "Shared native host initialization blocker; no executor received the task."
+    },
+    {
+      "case_id": "korean-condition-retention",
+      "reason": "Shared native host initialization blocker; no executor received the task."
+    }
+  ],
+  "limits": "No native activation, application, multi-turn, compaction, permission enforcement, model support, comparative quality, or cost conclusion. No alternate model or relaxed sandbox was used."
+}
